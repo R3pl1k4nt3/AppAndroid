@@ -1,5 +1,6 @@
 package com.example.listview
 
+import android.arch.lifecycle.Observer
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -10,18 +11,24 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val producto = Producto("Camara",100.00,"Camara modelo maravilloso",R.drawable.camara)
-        val producto2 = Producto("pc",200.0, "Sobremesa", R.drawable.pc)
+        var listaProductos = emptyList<Producto>()
 
-        val listaProductos = listOf(producto,producto2)
-        val adapter = ProductosAdapter(this,listaProductos)
-        lista.adapter = adapter
+        val database = AppDatabase.getDatabase(this)
+
+        database.productos().getAll().observe(this, Observer {
+            listaProductos = it
+
+            val adapter = ProductosAdapter(this, listaProductos)
+
+            lista.adapter = adapter
+        })
 
         lista.setOnItemClickListener { parent, view, position, id ->
-            val intent = Intent(this,ProductoActivity::class.java)
-            intent.putExtra("producto",listaProductos[position])
+            val intent = Intent(this, ProductoActivity::class.java)
+            intent.putExtra("id", listaProductos[position].idProducto)
             startActivity(intent)
         }
+
 
     }
 }
